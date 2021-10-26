@@ -12,7 +12,7 @@ fprintf('iter = %d, f = %d, ||g|| = %d\n',iter, f(iter),normgrad(iter));
 
 
 % trust region params 
-dmax = 101.05; 
+dmax = 100; 
 dmin = 1; 
 d = 0.2*dmax; 
 eta = 0.1; 
@@ -35,8 +35,8 @@ while iter < kmax && nor > tol
         if dd < 1e-6
             break 
         end
-%         q = C'\p; % solve C^\top q = p
-        q = B1^(0.5)\p;
+        q = C'\p; % solve C^\top q = p
+%         q = B1^(0.5)\p;
         nq = norm(q);
         lamnew = lam + (np/nq)^2*(np - d)/d; 
         if lamnew < 0
