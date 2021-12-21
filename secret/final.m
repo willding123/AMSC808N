@@ -41,6 +41,8 @@ fp = @(k) c(1)*exp(-c(3)*k).*k.^(-c(2));
 scatter(logbin(:,1),fp(logbin(:,1)),"filled")
 
 legend("loglog",'log-binning','power law')
+xlabel('log(k)')
+ylabel('log(p_k)')
 
 %% Q5 average path lengths
 d = distances(G); 
@@ -54,7 +56,7 @@ l = log(n/z1)/log(z2/z1)+1;
 % l = (log((n-1)*(z2-z1)+z1^2)-log(z1^2))/log(z2/z1);
 
 %% Q6 clustering coefficient 
-C = trace(A^3)/(sum(A,2)'*(sum(A,2)-1));
+C = trace(A^3)/(sum(A,2)'*(sum(A,2)-1)); % clustering coefficient for actual graph 
 Cr = z2^2/z1^3/n; % clustering coefficient for the random graph 
 
 %% Q8 & Q9 
@@ -62,20 +64,20 @@ rng(0)
 Tc = ((1:216)*pk)/(((1:216).*(0:215))*pk);
 T= 0.4;
 E = find(triu(A)) ; % all undirected edges' linear indices
-Te = ceil(T*length(E)); % number of edges in transmission graph 
+Te = ceil(T*length(E)); % number of unqiue edges in transmission graph 
 % [row col] = ind2sub([n,n],E(randperm(length(E),Te))); % transmission graph edges
 % Tg = [row col]; 
 Tg = zeros(n,n);
 idx = E(randperm(length(E),Te));
 Tg(idx)=1; 
 Tg  = Tg+Tg';
-sick = 1026;
+sick = 1026; % start with some node in the giant component or we can choose a randon node until we end up in giant component 
 
 count=1; % count of sick people 
 cp = 0; % count of sick people from previous time step 
 add = 1; 
 vcount = [1]; % infected number after each time step 
-for i =1:10 
+for i =1:10  % run 10 time steps 
     new = []; 
    for j=(cp+1):(cp+add)
     row  = sick(j);
@@ -96,6 +98,8 @@ end
 % ind = sub2ind([n,n], sick(:,1), sick(:,2));
 % any(Tg(ind)==0) % check if all edges in "sick" are correct
 figure(1);plot(vcount(2:end))
+xlabel('time steps')
+ylabel('number of infected nodes')
 Pe = count/n; % fraction of nodes infected
 %     
 % for i =1:10
@@ -114,8 +118,8 @@ dG1 =  @(x)1.0./x.^2.*polylog(-1.004256392651763,x.*9.566005994957725e-1).*(2.30
 
 % solve u = G1(1+(u-1)T) where T = 0.4 using Newton 
 mu = 1; 
-tol = 1e-3;
-alpha =@(k) 0.01/sqrt(k+100);
+tol = 1e-4;
+alpha =@(k) 0.001;
 k =1; 
 kmax = 1e4; 
 while abs(real(mu-G1(1+(mu-1)*T)))>=tol && k<kmax && mu>0
@@ -125,4 +129,7 @@ while abs(real(mu-G1(1+(mu-1)*T)))>=tol && k<kmax && mu>0
 end
 S = 1-G0(1+(mu-1)*T);
 % x = x + alpha*p; 
-
+%% Q10c critical fraction of nodes to be removed 
+nc = floor(Tcr*sum(did)/z1); % critical number of nodes s.t T=Tcr
+nes = round(2*Te/z1); % estimate for total number of nodes in a graph with T=0.4; use 2*Te here because Te only counts unique edges, the actual number of edges is twice. 
+(nes-nc)/nes % critical fraction of nodes to be removed 
